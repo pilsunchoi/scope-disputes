@@ -1,0 +1,42 @@
+digraph appeal {
+  
+  graph [fontname="Malgun Gothic", fontsize=11, dpi=300, bgcolor=white, pad=0.2];
+  node  [fontname="Malgun Gothic", fontsize=10, shape=box, style="rounded", penwidth=1.0, margin="0.15,0.08"];
+  edge  [fontname="Malgun Gothic", fontsize=9, penwidth=0.9, arrowsize=0.7];
+
+  rankdir=LR; nodesep=0.25; ranksep=0.45; newrank=true;
+  node [width=1.9];
+  labelloc=b; label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="6"><TR>
+    <TD BGCOLOR="gray85" BORDER="1" WIDTH="24" HEIGHT="12"></TD><TD ALIGN="LEFT">이 DB가 결정을 모은 경로(숫자는 결정 수)</TD>
+    <TD WIDTH="20"></TD>
+    <TD BORDER="1" STYLE="dashed" WIDTH="24" HEIGHT="12"></TD><TD ALIGN="LEFT">거치지 않아도 되는 단계</TD></TR></TABLE>>;
+
+  subgraph cluster_pre { label="과세 전"; color=gray70; style=solid; penwidth=0.7; labelloc=t;
+    pre [label="과세전적부심사\n관세청(또는 세관)\n9건", style="rounded,filled", fillcolor=gray85]; }
+  subgraph cluster_tax { label="과세"; color=gray70; style=solid; penwidth=0.7; labelloc=t;
+    tax [label="세관의 과세·처분\n경정, 경정청구 거부", penwidth=1.8]; }
+  subgraph cluster_obj { label="과세 후(선택)"; color=gray70; style=solid; penwidth=0.7; labelloc=t;
+    obj [label="이의신청\n세관장", style="rounded,dashed"]; }
+
+  # 이의신청을 건너뛰는 선: 선이 문구를 지나가도록 문구를 노드로 둔다
+  skip [shape=plaintext, style="", width=0, height=0, margin="0.06,0", fontsize=9, label="이의신청 없이 바로"];
+  { rank=same; obj; skip; }
+  skip -> obj [style=invis];  # LR에서는 앞 노드가 아래에 놓인다
+  j [shape=point, width=0.06];
+  subgraph cluster_three { label="과세 후(셋 중 하나)"; color=gray70; style=solid; penwidth=0.7; labelloc=t;
+    rev [label="심사청구\n관세청장\n4건", style="rounded,filled", fillcolor=gray85];
+    trib [label="심판청구\n조세심판원\n49건", style="rounded,filled", fillcolor=gray85];
+    audit [label="감사원 심사청구\n감사원"]; }
+  subgraph cluster_court { label="그다음"; color=gray70; style=solid; penwidth=0.7; labelloc=t;
+    court [label="행정소송\n법원\n11건", style="rounded,filled", fillcolor=gray85]; }
+
+  pre -> tax;
+  tax -> obj [style=dashed];
+  obj -> j [style=dashed, arrowhead=none];
+  tax -> skip [arrowhead=none];
+  skip -> j [arrowhead=none];
+  j -> rev; j -> trib; j -> audit;
+  { rank=same; rev; trib; audit; }
+  audit -> trib -> rev [style=invis];  # LR에서는 앞 노드가 아래에 놓인다
+  rev -> court; trib -> court; audit -> court;
+}

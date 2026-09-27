@@ -1,0 +1,54 @@
+digraph linkage {
+  
+  graph [fontname="Malgun Gothic", fontsize=11, dpi=300, bgcolor=white, pad=0.2];
+  node  [fontname="Malgun Gothic", fontsize=10, shape=box, style="rounded", penwidth=1.0, margin="0.15,0.08"];
+  edge  [fontname="Malgun Gothic", fontsize=9, penwidth=0.9, arrowsize=0.7];
+
+  rankdir=TB; nodesep=0.35; ranksep=0.55; newrank=true;
+  node [width=2.0];
+
+  # 왼쪽 층 이름
+  L1 [group=L, width=0.8, label="기관과\n절차", shape=plaintext, style="", fontcolor=gray25];
+  L2 [group=L, width=0.8, label="공개\n기록", shape=plaintext, style="", fontcolor=gray25];
+  L3 [group=L, width=0.8, label="DB\n테이블", shape=plaintext, style="", fontcolor=gray25];
+  L1 -> L2 -> L3 [style=invis];
+
+  # group이 같은 노드는 한 세로줄에 놓인다
+  subgraph cluster_measure { label=<<B>조치 계열</B>>; style=filled; fillcolor=gray95; color=gray60;
+    ktc [group=a, label="무역위원회\n조사대상물품 설정·판정"];
+    mof [group=b, label="재정경제부\n부령 제정"];
+    ktc_rec [group=a, label="사건 상세, 범위 안내서,\n보도자료, 30년사 부록\n(무역위원회 누리집)", fontsize=9];
+    mof_rec [group=b, label="부령 본문과 별표\n(국가법령정보센터\n연혁법령)", fontsize=9];
+    ktc_db [group=a, label="ktc-cases.csv", fontsize=9];
+    mea_db [group=b, label=<<B>measures.csv</B>>, style="rounded,filled", fillcolor=gray20, fontcolor=white, fontsize=9];
+  }
+  subgraph cluster_dispute { label=<<B>분쟁 계열</B>>; style=filled; fillcolor=gray95; color=gray60;
+    cus [group=c, label="세관\n적용·처분", width=1.5];
+    app [group=d, label="조세심판원·관세청·법원\n불복 결정", width=2.3];
+    cus_rec [group=c, label="별도 공개 기록 없음\n(결정문의 처분개요에\n나타남)", style="rounded,dashed", fontsize=9, width=1.5];
+    app_rec [group=d, label="결정문, 판결 요지\n(조세심판원 결정례,\n관세법령정보포털)", fontsize=9, width=2.3];
+    dis_db [group=d, label="dispute-extract.csv", fontsize=9, width=2.3];
+  }
+
+  { rank=same; L1; ktc; mof; cus; app; }
+  { rank=same; L2; ktc_rec; mof_rec; cus_rec; app_rec; }
+  { rank=same; L3; ktc_db; mea_db; dis_db; }
+
+  # 기관 사이의 순서
+  ktc -> mof [label="부과 건의"];
+  mof -> cus [label="시행"];
+  cus -> app [label="불복"];
+
+  # 기관과 기록, 기록과 테이블
+  ktc -> ktc_rec [arrowhead=none]; mof -> mof_rec [arrowhead=none];
+  cus -> cus_rec [arrowhead=none]; app -> app_rec [arrowhead=none];
+  ktc_rec -> ktc_db; mof_rec -> mea_db; app_rec -> dis_db;
+
+  # 테이블 사이의 연결(분쟁 쪽은 결정문이 인용한 부령 번호가 열쇠)
+  ktc_db -> mea_db [dir=both, label="measure-ktc-links.csv\n물품명·대상국·판정일", fontsize=8];
+  mea_db -> dis_db [dir=both, label="dispute-measure-links.csv\n결정문이 인용한 부령 번호·수입기간", fontsize=8];
+
+  # 가로 순서 고정
+  L1 -> ktc [style=invis]; L2 -> ktc_rec [style=invis]; L3 -> ktc_db [style=invis];
+  ktc_rec -> mof_rec -> cus_rec -> app_rec [style=invis];
+}
